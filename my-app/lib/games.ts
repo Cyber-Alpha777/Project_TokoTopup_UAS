@@ -1,4 +1,4 @@
-// Data game, nominal, voucher, dan metode pembayaran (dummy, sesuai wireframe Figma)
+// Data game, nominal, voucher, dan metode pembayaran (dummy)
 
 export type Item = { id: string; label: string; price: number; oldPrice?: number };
 export type Category = { name: string; items: Item[] };
@@ -52,53 +52,10 @@ export const games: Game[] = [
     ],
   },
   {
-    id: "fcmobile", name: "FC Mobile", publisher: "EA Sports", hue: 140, popular: true, idLabel: "UID",
+    id: "fcmobile", name: "FC Mobile", publisher: "EA Sports", hue: 140, image: "/Fc.jpg", popular: true, idLabel: "UID",
     categories: [{ name: "FC Points", items: mk("fc", [["100 FC Points", 15000], ["520 FC Points", 75000], ["1070 FC Points", 150000], ["2200 FC Points", 300000]]) }],
   },
-  {
-    id: "efootball", name: "eFootball™", publisher: "Konami", hue: 200, popular: true, idLabel: "Konami ID",
-    categories: [{ name: "Coins", items: mk("ef", [["130 coins", 21000], ["300 coins", 49000], ["1000 coins", 120000, 160000], ["3250 coins", 380000]]) }],
-  },
-  {
-    id: "roblox", name: "Roblox", publisher: "Roblox Corp", hue: 350, popular: true, idLabel: "Username Roblox",
-    categories: [{ name: "Robux", items: mk("rb", [["80 Robux", 15000], ["400 Robux", 75000], ["480 Robux", 146000, 200000], ["800 Robux", 150000]]) }],
-  },
-  {
-    id: "pubgm", name: "PUBG Mobile", publisher: "Tencent", hue: 45, popular: true, idLabel: "Character ID",
-    categories: [{ name: "UC", items: mk("pb", [["60 UC", 15000], ["325 UC", 75000], ["660 UC", 148000], ["1800 UC", 380000]]) }],
-  },
-  {
-    id: "genshin", name: "Genshin Impact", publisher: "HoYoverse", hue: 265, idLabel: "UID",
-    categories: [{ name: "Genesis Crystals", items: mk("gi", [["60 Genesis Crystals", 16000], ["330 Genesis Crystals", 79000], ["1090 Genesis Crystals", 249000]]) }],
-  },
-  {
-    id: "valorant", name: "VALORANT", publisher: "Riot Games", hue: 0, idLabel: "Riot ID",
-    categories: [{ name: "Valorant Points", items: mk("vl", [["475 VP", 59000], ["1000 VP", 119000], ["2050 VP", 239000]]) }],
-  },
-  {
-    id: "hsr", name: "Honkai: Star Rail", publisher: "HoYoverse", hue: 290, idLabel: "UID",
-    categories: [{ name: "Oneiric Shards", items: mk("hs", [["60 Oneiric Shards", 16000], ["330 Oneiric Shards", 79000], ["1090 Oneiric Shards", 249000]]) }],
-  },
-  {
-    id: "codm", name: "Call of Duty: Mobile", publisher: "Activision", hue: 100, idLabel: "Open ID",
-    categories: [{ name: "CP", items: mk("cd", [["80 CP", 15000], ["400 CP", 75000], ["800 CP", 150000]]) }],
-  },
-  {
-    id: "coc", name: "Clash of Clans", publisher: "Supercell", hue: 30, idLabel: "Player Tag",
-    categories: [{ name: "Gems", items: mk("cc", [["500 Gems", 79000], ["1200 Gems", 159000], ["2500 Gems", 319000]]) }],
-  },
-  {
-    id: "aov", name: "Arena of Valor", publisher: "Garena", hue: 170, idLabel: "Player ID",
-    categories: [{ name: "Vouchers", items: mk("av", [["40 Vouchers", 10000], ["90 Vouchers", 20000], ["230 Vouchers", 50000]]) }],
-  },
-  {
-    id: "stumble", name: "Stumble Guys", publisher: "Kitka Games", hue: 310, idLabel: "Username",
-    categories: [{ name: "Gems", items: mk("sg", [["300 Gems", 15000], ["1000 Gems", 45000], ["2500 Gems", 99000]]) }],
-  },
-  {
-    id: "pointblank", name: "Point Blank", publisher: "Zepetto", hue: 80, idLabel: "Nickname",
-    categories: [{ name: "Cash", items: mk("pbl", [["1.200 Cash", 10000], ["6.000 Cash", 50000], ["12.500 Cash", 100000]]) }],
-  },
+
 ];
 
 export const getGame = (id: string) => games.find((g) => g.id === id);
