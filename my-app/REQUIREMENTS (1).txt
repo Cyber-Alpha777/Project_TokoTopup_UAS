@@ -1,0 +1,76 @@
+VOUCH STORE (TokoTopup UAS) - DAFTAR KEBUTUHAN
+================================================
+
+1. SOFTWARE YANG HARUS TERPASANG
+--------------------------------
+- Node.js  : versi 20.9 atau lebih baru (disarankan LTS terbaru)
+             cek dengan: node -v
+- npm      : ikut terpasang bersama Node.js (cek: npm -v)
+- Browser  : Chrome / Edge / Firefox versi terbaru
+- Editor   : VS Code (disarankan, opsional)
+
+2. LIBRARY (sudah tercatat di package.json, otomatis ter-install)
+-----------------------------------------------------------------
+Dependencies:
+- next                 16.4.6
+- react                19.3.0
+- react-dom            19.3.0
+
+DevDependencies:
+- tailwindcss          4.3.3
+- @tailwindcss/turbopack 4.3.3
+- typescript           ^5
+- @types/node          ^20
+- @types/react         ^19
+- @types/react-dom     ^19
+- eslint               ^9
+- eslint-config-next   16.4.6
+
+3. LIBRARY TAMBAHAN (WAJIB dipasang manual agar QRIS bisa di-scan)
+------------------------------------------------------------------
+- qrcode.react         (terbaru)
+  Pasang dengan: npm install qrcode.react
+  Lalu ganti isi components/QrDummy.tsx dengan versi yang memakai
+  <QRCodeSVG /> (lihat penjelasan di chat).
+  Tanpa library ini, QR tetap tampil tetapi hanya berupa pola dummy
+  dan TIDAK bisa di-scan.
+
+4. CARA MENJALANKAN
+-------------------
+  cd Project_TokoTopup_UAS/my-app
+  npm install            <- sekali saja (membaca package.json)
+  npm install qrcode.react   <- sekali saja (lihat poin 3)
+  npm run dev            <- menjalankan server development
+
+Buka di browser:
+  http://localhost:3000            Beranda
+  http://localhost:3000/katalog    Katalog game
+  http://localhost:3000/promo      Promo
+  http://localhost:3000/login      Login
+  http://localhost:3000/register   Daftar
+  http://localhost:3000/game/mlbb  Halaman transaksi
+  http://localhost:3000/voucher    Tukar voucher (khusus member)
+  http://localhost:3000/riwayat    Riwayat (khusus member)
+
+Perintah lain:
+  npm run lint           cek kode dengan ESLint
+  npm run build          build untuk produksi
+  npm run start          jalankan hasil build
+
+5. AKUN DEMO
+------------
+  Email    : raka@gmail.com
+  Password : 12345678
+  (akun baru yang didaftarkan otomatis dapat 500 poin untuk demo)
+
+6. CATATAN PENTING
+------------------
+- Tidak ada backend / database. Akun, poin, voucher, dan pesanan
+  disimpan di localStorage browser, jadi data hanya ada di browser
+  yang dipakai dan hilang jika data situs dihapus.
+- Untuk reset data: buka console browser lalu jalankan
+    localStorage.removeItem("vouchstore:v1")
+- Pembayaran hanya simulasi (tidak terhubung ke payment gateway).
+- Gambar game yang tersedia baru: public/Mole.jpg dan public/FF.jpg.
+  Game lain memakai sampul gradient otomatis.
+- Fitur dark mode memakai class "dark" pada <html> (toggle di Navbar).

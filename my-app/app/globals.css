@@ -1,2 +1,9 @@
 @import "tailwindcss";
 
+
+/* Mode gelap lewat class "dark" di <html> (diatur oleh toggle di Navbar) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+html.dark {
+  color-scheme: dark;
+}

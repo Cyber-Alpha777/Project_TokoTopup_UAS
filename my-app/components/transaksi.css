@@ -1,0 +1,53 @@
+/* ===== CSS EKSTERNAL (file terpisah, di-import oleh komponen) ===== */
+
+.tt-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  text-align: left;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.tt-option:hover { border-color: #6366f1; transform: translateY(-1px); }
+.tt-option[data-selected="true"] { border-color: #4f46e5; box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.25); }
+.tt-option[disabled] { cursor: not-allowed; opacity: 0.55; transform: none; border-color: #e5e7eb; }
+
+.tt-radio {
+  margin-left: auto;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 9999px;
+  border: 1.5px solid #9ca3af;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.tt-option[data-selected="true"] .tt-radio { border-color: #4f46e5; }
+.tt-option[data-selected="true"] .tt-radio::after {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: #4f46e5;
+}
+
+/* kartu umum (halaman auth, status, voucher) */
+.vs-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* mode gelap mengikuti class "dark" pada <html> */
+.dark .tt-option { background: #1f2937; border-color: #374151; }
+.dark .tt-option[disabled] { border-color: #374151; }
+.dark .vs-card { background: #1f2937; border-color: #374151; }
+
+/* kotak QR (QrDummy) */
+.qr-box { border-radius: 0.5rem; box-shadow: 0 0 0 6px #fff; }
