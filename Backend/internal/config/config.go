@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	Port, DatabaseURL, JWTSecret, FrontendOrigin string
+	CookieSecure                                 bool
 }
 
 func Load() Config {
@@ -18,6 +19,7 @@ func Load() Config {
 		DatabaseURL:    must("DATABASE_URL"),
 		JWTSecret:      must("JWT_SECRET"),
 		FrontendOrigin: get("FRONTEND_ORIGIN", "http://localhost:3000"),
+		CookieSecure:   os.Getenv("COOKIE_SECURE") == "true",
 	}
 }
 

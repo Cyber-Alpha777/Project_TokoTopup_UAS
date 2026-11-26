@@ -2,20 +2,22 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"net/http"
-	"os"
+	"time"
 
-	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/joho/godotenv"
+
+	"vouchstore/internal/api"
+	"vouchstore/internal/auth"
+	"vouchstore/internal/concepts/admincatalog"
+	"vouchstore/internal/config"
 )
 
 func main() {
-	_ = godotenv.Load()
+	cfg := config.Load()
 
-	pool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	pool, err := pgxpool.New(context.Background(), cfg.DatabaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -24,19 +26,15 @@ func main() {
 		log.Fatal("database tidak terhubung: ", err)
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /tes", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
-	})
-
-	handler := cors.New(cors.Options{
-		AllowedOrigins:   []string{os.Getenv("FRONTEND_ORIGIN")},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Authorization", "Content-Type"},
-		AllowCredentials: true,
-	}).Handler(mux)
-
-	log.Println("server jalan di :" + os.Getenv("PORT"))
-	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), handler))
+	h := api.NewHandler(admincatalog.NewConcept(pool), auth.NewService(pool), cfg)
+	srv := &http.Server{
+		Addr:              ":" + cfg.Port,
+		Handler:           api.NewRouter(h),
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
+	log.Println("server jalan di :" + cfg.Port)
+	log.Fatal(srv.ListenAndServe())
 }

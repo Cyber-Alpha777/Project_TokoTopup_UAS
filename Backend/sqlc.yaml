@@ -1,0 +1,23 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "migrations/00001_auth.sql"
+    queries: "internal/auth/queries.sql"
+    gen:
+      go:
+        package: "auth"
+        out: "internal/auth"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_empty_slices: true
+
+  - engine: "postgresql"
+    schema: "migrations/00002_admincatalog.sql"
+    queries: "internal/concepts/admincatalog/queries.sql"
+    gen:
+      go:
+        package: "admincatalog"
+        out: "internal/concepts/admincatalog"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_empty_slices: true
