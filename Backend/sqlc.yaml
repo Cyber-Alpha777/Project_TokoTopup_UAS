@@ -21,3 +21,25 @@ sql:
         sql_package: "pgx/v5"
         emit_json_tags: true
         emit_empty_slices: true
+
+  - engine: "postgresql"
+    schema: "migrations/00003_order.sql"
+    queries: "internal/concepts/order/queries.sql"
+    gen:
+      go:
+        package: "order"
+        out: "internal/concepts/order"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_empty_slices: true
+
+  - engine: "postgresql"
+    schema: "migrations/00004_payment.sql"
+    queries: "internal/concepts/payment/queries.sql"
+    gen:
+      go:
+        package: "payment"
+        out: "internal/concepts/payment"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_empty_slices: true

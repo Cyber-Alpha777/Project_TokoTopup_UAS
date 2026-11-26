@@ -100,3 +100,11 @@ func isUniqueViolation(err error) bool {
 	var pgErr *pgconn.PgError
 	return errors.As(err, &pgErr) && pgErr.Code == "23505"
 }
+
+func (c *Concept) GetProduct(ctx context.Context, id int64) (Product, error) {
+	p, err := c.q.GetProduct(ctx, id)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Product{}, ErrProductNotFound
+	}
+	return p, err
+}

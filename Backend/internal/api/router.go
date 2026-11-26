@@ -27,6 +27,15 @@ func NewRouter(h *Handler) http.Handler {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/games", h.ListGames)
 		r.Get("/games/{id}/products", h.ListProducts)
+		member := RequireRole(auth.RoleMember)
+		authed := RequireRole(auth.RoleMember, auth.RoleAdmin)
+		r.With(member).Post("/orders", h.CreateOrder)
+		r.With(member).Get("/orders", h.ListOrders)
+		r.With(authed).Get("/orders/{id}", h.GetOrder)
+		r.With(member).Post("/orders/{id}/cancel", h.CancelOrder)
+		r.With(member).Post("/orders/{id}/payments", h.InitiatePayment)
+		r.With(authed).Get("/orders/{id}/payments", h.ListPayments)
+		r.With(authed).Post("/payments/{id}/confirm", h.ConfirmPayment)
 
 		r.Route("/auth", func(r chi.Router) {
 			limit := httprate.LimitByIP(10, time.Minute) // batasi percobaan login/register

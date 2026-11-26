@@ -8,18 +8,21 @@ import (
 )
 
 type Config struct {
-	Port, DatabaseURL, JWTSecret, FrontendOrigin string
-	CookieSecure                                 bool
+	Port, DatabaseURL, JWTSecret,
+	FrontendOrigin string
+	CookieSecure      bool
+	PaymentSimulation bool
 }
 
 func Load() Config {
 	_ = godotenv.Load()
 	return Config{
-		Port:           get("PORT", "8080"),
-		DatabaseURL:    must("DATABASE_URL"),
-		JWTSecret:      must("JWT_SECRET"),
-		FrontendOrigin: get("FRONTEND_ORIGIN", "http://localhost:3000"),
-		CookieSecure:   os.Getenv("COOKIE_SECURE") == "true",
+		Port:              get("PORT", "8080"),
+		DatabaseURL:       must("DATABASE_URL"),
+		JWTSecret:         must("JWT_SECRET"),
+		FrontendOrigin:    get("FRONTEND_ORIGIN", "http://localhost:3000"),
+		CookieSecure:      os.Getenv("COOKIE_SECURE") == "true",
+		PaymentSimulation: os.Getenv("PAYMENT_SIMULATION") == "true",
 	}
 }
 

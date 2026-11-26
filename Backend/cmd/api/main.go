@@ -12,6 +12,7 @@ import (
 	"vouchstore/internal/auth"
 	"vouchstore/internal/concepts/admincatalog"
 	"vouchstore/internal/config"
+	"vouchstore/internal/syncs"
 )
 
 func main() {
@@ -26,7 +27,7 @@ func main() {
 		log.Fatal("database tidak terhubung: ", err)
 	}
 
-	h := api.NewHandler(admincatalog.NewConcept(pool), auth.NewService(pool), cfg)
+	h := api.NewHandler(admincatalog.NewConcept(pool), auth.NewService(pool), syncs.NewService(pool), cfg)
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
 		Handler:           api.NewRouter(h),
