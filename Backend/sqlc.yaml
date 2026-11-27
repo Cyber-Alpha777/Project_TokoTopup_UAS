@@ -43,3 +43,47 @@ sql:
         sql_package: "pgx/v5"
         emit_json_tags: true
         emit_empty_slices: true
+
+  - engine: "postgresql"
+    schema: "migrations/00005_voucher.sql"
+    queries: "internal/concepts/voucher/queries.sql"
+    gen:
+      go:
+        package: "voucher"
+        out: "internal/concepts/voucher"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_empty_slices: true
+
+  - engine: "postgresql"
+    schema: "migrations/00006_quest.sql"
+    queries: "internal/concepts/quest/queries.sql"
+    gen:
+      go:
+        package: "quest"
+        out: "internal/concepts/quest"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_empty_slices: true
+
+  - engine: "postgresql"
+    schema: "migrations/00007_questreward.sql"
+    queries: "internal/concepts/questreward/queries.sql"
+    gen:
+      go:
+        package: "questreward"
+        out: "internal/concepts/questreward"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_empty_slices: true
+
+  - engine: "postgresql"
+    schema: "migrations/00008_pointexchange.sql"
+    queries: "internal/concepts/pointexchange/queries.sql"
+    gen:
+      go:
+        package: "pointexchange"
+        out: "internal/concepts/pointexchange"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_empty_slices: true
