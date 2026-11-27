@@ -78,7 +78,9 @@ sql:
         emit_empty_slices: true
 
   - engine: "postgresql"
-    schema: "migrations/00008_pointexchange.sql"
+    schema:
+      - "migrations/00008_pointexchange.sql"
+      - "migrations/00009_pointexchange_value.sql"
     queries: "internal/concepts/pointexchange/queries.sql"
     gen:
       go:

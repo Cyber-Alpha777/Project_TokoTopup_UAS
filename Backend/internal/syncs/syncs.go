@@ -3,14 +3,18 @@ package syncs
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgxpool"
 
 	"vouchstore/internal/concepts/admincatalog"
 	"vouchstore/internal/concepts/order"
 	"vouchstore/internal/concepts/payment"
+	"vouchstore/internal/concepts/pointexchange"
+	"vouchstore/internal/concepts/quest"
+	"vouchstore/internal/concepts/questreward"
+	"vouchstore/internal/concepts/voucher"
 )
 
 var (
@@ -19,6 +23,8 @@ var (
 	ErrProductUnavailable    = errors.New("syncs: produk tidak aktif atau harga sudah berubah")
 	ErrPaymentAmountMismatch = errors.New("syncs: jumlah bayar tidak sama dengan harga order")
 	ErrOrderClosed           = errors.New("syncs: order sudah tidak menerima pembayaran")
+	ErrVoucherAlreadyApplied = errors.New("syncs: order ini sudah memakai voucher")
+	ErrPaymentInProgress     = errors.New("syncs: order masih punya pembayaran waiting, voucher tidak bisa dipasang")
 )
 
 type dbtx interface {
@@ -28,18 +34,40 @@ type dbtx interface {
 }
 
 type deps struct {
-	catalog  *admincatalog.Concept
-	orders   *order.Concept
-	payments *payment.Concept
+	catalog   *admincatalog.Concept
+	orders    *order.Concept
+	payments  *payment.Concept
+	vouchers  *voucher.Concept
+	quests    *quest.Concept
+	rewards   *questreward.Concept
+	exchanges *pointexchange.Concept
 }
 
 func newDeps(db dbtx) deps {
-	return deps{admincatalog.NewConcept(db), order.NewConcept(db), payment.NewConcept(db)}
+	return deps{
+		catalog:   admincatalog.NewConcept(db),
+		orders:    order.NewConcept(db),
+		payments:  payment.NewConcept(db),
+		vouchers:  voucher.NewConcept(db),
+		quests:    quest.NewConcept(db),
+		rewards:   questreward.NewConcept(db),
+		exchanges: pointexchange.NewConcept(db),
+	}
 }
 
-type Service struct{ pool *pgxpool.Pool }
+// DB dipenuhi oleh *pgxpool.Pool (produksi) dan pgx.Tx (tes: seluruh tes
+// dijalankan di satu transaksi yang di-rollback; Begin pada Tx menjadi savepoint).
+type DB interface {
+	dbtx
+	Begin(context.Context) (pgx.Tx, error)
+}
 
-func NewService(pool *pgxpool.Pool) *Service { return &Service{pool: pool} }
+type Service struct {
+	pool DB
+	now  func() time.Time // bisa diganti di test
+}
+
+func NewService(pool DB) *Service { return &Service{pool: pool, now: time.Now} }
 
 // tx menjalankan fn dalam satu transaksi: commit jika nil, rollback jika error.
 func (s *Service) tx(ctx context.Context, fn func(d deps) error) error {
@@ -71,21 +99,55 @@ func cancelledOrderFailsWaitingPayment(ctx context.Context, d deps, orderID int6
 		return err
 	}
 	for _, p := range waiting {
-		if _, err := d.payments.Fail(ctx, p.ID); err != nil {
+		if _, err := failPayment(ctx, d, p.ID); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
+// sync ReleaseVoucherOnCancel
+// when Order.cancel; where ada Redemption untuk order itu; then Voucher.release
+func releaseVoucherOnCancel(ctx context.Context, d deps, orderID int64) error {
+	has, err := d.vouchers.HasRedemption(ctx, orderID)
+	if err != nil || !has {
+		return err
+	}
+	return d.vouchers.Release(ctx, orderID)
+}
+
 // Order.cancel + semua sync yang dipicu oleh cancel.
-// (ReleaseVoucherOnCancel akan ditambahkan di sini setelah concept Voucher ada.)
 func cancelOrder(ctx context.Context, d deps, orderID int64) (order.Order, error) {
 	o, err := d.orders.Cancel(ctx, orderID)
 	if err != nil {
 		return order.Order{}, err
 	}
+	if err := releaseVoucherOnCancel(ctx, d, orderID); err != nil {
+		return order.Order{}, err
+	}
 	return o, cancelledOrderFailsWaitingPayment(ctx, d, orderID)
+}
+
+// sync FailedPaymentCancelsOrder
+// when Payment.fail; where order.status = pending; then Order.cancel
+// Tidak berulang tanpa henti: cancelOrder mengubah status dulu, sehingga
+// payment.fail yang dipicu cancel melihat order sudah bukan pending.
+func failedPaymentCancelsOrder(ctx context.Context, d deps, p payment.Payment) error {
+	o, err := d.orders.Get(ctx, p.OrderID)
+	if err != nil || o.Status != order.StatusPending {
+		return err
+	}
+	_, err = cancelOrder(ctx, d, o.ID)
+	return err
+}
+
+// Payment.fail + semua sync yang dipicu oleh fail.
+func failPayment(ctx context.Context, d deps, paymentID int64) (payment.Payment, error) {
+	p, err := d.payments.Fail(ctx, paymentID)
+	if err != nil {
+		return payment.Payment{}, err
+	}
+	return p, failedPaymentCancelsOrder(ctx, d, p)
 }
 
 // sync PaymentSuccessStartsDelivery
@@ -111,10 +173,14 @@ func (s *Service) PlaceOrder(ctx context.Context, in PlaceOrderInput) (order.Ord
 		if err != nil {
 			return err
 		}
-		if o, err = d.orders.Create(ctx, in.BuyerID, in.ProductID, in.InGameID, in.ZoneID, in.Price); err != nil {
+		price := in.Price
+		if price == 0 { // klien tidak mengirim harga: pakai harga produk dari DB
+			price = product.Price
+		}
+		if o, err = d.orders.Create(ctx, in.BuyerID, in.ProductID, in.InGameID, in.ZoneID, price); err != nil {
 			return err
 		}
-		if !product.Active || in.Price != product.Price { // RejectOrderWithInvalidProduct
+		if !product.Active || price != product.Price { // RejectOrderWithInvalidProduct
 			rejected = true
 			o, err = cancelOrder(ctx, d, o.ID)
 		}
@@ -183,6 +249,9 @@ func (s *Service) InitiatePayment(ctx context.Context, buyerID, orderID int64, m
 		if o.BuyerID != buyerID {
 			return ErrNotFound
 		}
+		if amount == 0 { // klien tidak mengirim jumlah: pakai harga order dari DB
+			amount = o.Price
+		}
 		if p, err = d.payments.Initiate(ctx, orderID, method, amount); err != nil {
 			return err
 		}
@@ -193,7 +262,7 @@ func (s *Service) InitiatePayment(ctx context.Context, buyerID, orderID int64, m
 			rejection = ErrPaymentAmountMismatch
 		}
 		if rejection != nil {
-			p, err = d.payments.Fail(ctx, p.ID)
+			p, err = failPayment(ctx, d, p.ID)
 		}
 		return err
 	})

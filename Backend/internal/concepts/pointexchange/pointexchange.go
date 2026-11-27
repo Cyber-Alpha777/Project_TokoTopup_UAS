@@ -9,7 +9,7 @@ import (
 
 var (
 	ErrOfferNotFound = errors.New("pointexchange: penawaran tidak ditemukan")
-	ErrInvalidInput  = errors.New("pointexchange: label, diskon, biaya, atau stok tidak valid")
+	ErrInvalidInput  = errors.New("pointexchange: label, nilai, biaya, atau stok tidak valid")
 	ErrOfferInactive = errors.New("pointexchange: penawaran tidak aktif")
 	ErrOutOfStock    = errors.New("pointexchange: stok penawaran habis")
 )
@@ -18,13 +18,13 @@ type Concept struct{ q *Queries }
 
 func NewConcept(db DBTX) *Concept { return &Concept{q: New(db)} }
 
-// createOffer — requires: discount > 0; cost > 0; stock > 0
+// createOffer — requires: value > 0; cost > 0; stock > 0
 // effects: Offer baru dengan active = true
-func (c *Concept) CreateOffer(ctx context.Context, label string, discount int64, cost, stock int32) (Offer, error) {
-	if label == "" || discount <= 0 || cost <= 0 || stock <= 0 {
+func (c *Concept) CreateOffer(ctx context.Context, label string, value int64, cost, stock int32) (Offer, error) {
+	if label == "" || value <= 0 || cost <= 0 || stock <= 0 {
 		return Offer{}, ErrInvalidInput
 	}
-	return c.q.CreateOffer(ctx, CreateOfferParams{Label: label, Discount: discount, Cost: cost, Stock: stock})
+	return c.q.CreateOffer(ctx, CreateOfferParams{Label: label, Value: value, Cost: cost, Stock: stock})
 }
 
 // exchange — requires: offer ada dan active; stock > 0
@@ -64,7 +64,7 @@ func (c *Concept) DeactivateOffer(ctx context.Context, id int64) (Offer, error) 
 
 // Pembacaan (bukan action pada spec)
 
-// GetOffer dipakai sync ExchangeIssuesVoucher untuk membaca offer.discount.
+// GetOffer dipakai sync ExchangeIssuesVoucher untuk membaca offer.value.
 func (c *Concept) GetOffer(ctx context.Context, id int64) (Offer, error) {
 	o, err := c.q.GetOffer(ctx, id)
 	if errors.Is(err, pgx.ErrNoRows) {

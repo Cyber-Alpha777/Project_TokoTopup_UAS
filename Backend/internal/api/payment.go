@@ -9,7 +9,7 @@ import (
 
 type initiatePaymentRequest struct {
 	Method string `json:"method" validate:"required,max=30"`
-	Amount int64  `json:"amount" validate:"required,gt=0"`
+	Amount int64  `json:"amount" validate:"omitempty,gt=0"` // opsional; jika kosong dipakai harga order dari DB
 }
 
 type paymentResponse struct {

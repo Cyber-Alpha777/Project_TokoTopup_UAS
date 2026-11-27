@@ -12,6 +12,10 @@ import (
 	"vouchstore/internal/concepts/admincatalog"
 	"vouchstore/internal/concepts/order"
 	"vouchstore/internal/concepts/payment"
+	"vouchstore/internal/concepts/pointexchange"
+	"vouchstore/internal/concepts/quest"
+	"vouchstore/internal/concepts/questreward"
+	"vouchstore/internal/concepts/voucher"
 	"vouchstore/internal/syncs"
 )
 
@@ -59,6 +63,59 @@ func writeDomainError(w http.ResponseWriter, err error) {
 		writeError(w, http.StatusConflict, "order_not_pending", "order sudah tidak berstatus pending")
 	case errors.Is(err, payment.ErrNotWaiting):
 		writeError(w, http.StatusConflict, "payment_not_waiting", "pembayaran sudah tidak berstatus waiting")
+	case errors.Is(err, order.ErrNotSending):
+		writeError(w, http.StatusConflict, "order_not_sending", "order belum berstatus sending")
+	case errors.Is(err, order.ErrInvalidDiscount):
+		writeError(w, http.StatusConflict, "discount_too_large", "diskon melebihi harga order")
+	case errors.Is(err, syncs.ErrVoucherAlreadyApplied):
+		writeError(w, http.StatusConflict, "voucher_already_applied", "order ini sudah memakai voucher")
+	case errors.Is(err, syncs.ErrPaymentInProgress):
+		writeError(w, http.StatusConflict, "payment_in_progress", "selesaikan atau batalkan pembayaran yang menunggu sebelum memasang voucher")
+
+	// voucher milik user lain disamarkan sebagai tidak ditemukan agar kepemilikan tidak bocor
+	case errors.Is(err, voucher.ErrNotFound), errors.Is(err, voucher.ErrNotOwner):
+		writeError(w, http.StatusNotFound, "voucher_not_found", "voucher tidak ditemukan")
+	case errors.Is(err, voucher.ErrInvalidInput):
+		writeError(w, http.StatusBadRequest, "invalid_voucher", "kode, diskon, kuota, atau masa berlaku tidak valid")
+	case errors.Is(err, voucher.ErrCodeTaken):
+		writeError(w, http.StatusConflict, "voucher_code_taken", "kode voucher sudah dipakai")
+	case errors.Is(err, voucher.ErrInactive):
+		writeError(w, http.StatusConflict, "voucher_inactive", "voucher tidak aktif")
+	case errors.Is(err, voucher.ErrExpired):
+		writeError(w, http.StatusConflict, "voucher_expired", "voucher sudah kedaluwarsa")
+	case errors.Is(err, voucher.ErrQuotaExhausted):
+		writeError(w, http.StatusConflict, "voucher_exhausted", "kuota voucher habis")
+	case errors.Is(err, voucher.ErrAlreadyRedeemed):
+		writeError(w, http.StatusConflict, "voucher_already_redeemed", "kamu sudah pernah memakai voucher ini")
+
+	case errors.Is(err, quest.ErrNotFound):
+		writeError(w, http.StatusNotFound, "quest_not_found", "quest tidak ditemukan")
+	case errors.Is(err, quest.ErrInvalidInput):
+		writeError(w, http.StatusBadRequest, "invalid_quest", "label, poin, target, atau batas waktu tidak valid")
+	case errors.Is(err, quest.ErrInactive):
+		writeError(w, http.StatusConflict, "quest_inactive", "quest sudah tidak aktif")
+	case errors.Is(err, quest.ErrNotDeletable):
+		writeError(w, http.StatusConflict, "quest_not_deletable", "quest masih aktif dan belum kedaluwarsa")
+
+	case errors.Is(err, questreward.ErrInsufficientPoints):
+		writeError(w, http.StatusConflict, "insufficient_points", "saldo poin tidak cukup")
+	case errors.Is(err, pointexchange.ErrOfferNotFound):
+		writeError(w, http.StatusNotFound, "offer_not_found", "penawaran tidak ditemukan")
+	case errors.Is(err, pointexchange.ErrInvalidInput):
+		writeError(w, http.StatusBadRequest, "invalid_offer", "label, nilai, biaya, atau stok tidak valid")
+	case errors.Is(err, pointexchange.ErrOfferInactive):
+		writeError(w, http.StatusConflict, "offer_inactive", "penawaran tidak aktif")
+	case errors.Is(err, pointexchange.ErrOutOfStock):
+		writeError(w, http.StatusConflict, "offer_out_of_stock", "stok penawaran habis")
+
+	case errors.Is(err, admincatalog.ErrNameTaken):
+		writeError(w, http.StatusConflict, "name_taken", "nama game sudah dipakai")
+	case errors.Is(err, admincatalog.ErrGameNotFound):
+		writeError(w, http.StatusNotFound, "game_not_found", "game tidak ditemukan")
+	case errors.Is(err, admincatalog.ErrGameInactive), errors.Is(err, admincatalog.ErrAlreadyInactive):
+		writeError(w, http.StatusConflict, "invalid_state", "game atau produk sudah tidak aktif")
+	case errors.Is(err, admincatalog.ErrInvalidPrice):
+		writeError(w, http.StatusBadRequest, "invalid_price", "harga harus lebih dari 0")
 	default:
 		internalError(w, err)
 	}

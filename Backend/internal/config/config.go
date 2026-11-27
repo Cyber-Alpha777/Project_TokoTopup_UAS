@@ -16,10 +16,14 @@ type Config struct {
 
 func Load() Config {
 	_ = godotenv.Load()
+	secret := must("JWT_SECRET")
+	if len(secret) < 32 {
+		log.Fatal("JWT_SECRET minimal 32 karakter (buat dengan: openssl rand -base64 48)")
+	}
 	return Config{
 		Port:              get("PORT", "8080"),
 		DatabaseURL:       must("DATABASE_URL"),
-		JWTSecret:         must("JWT_SECRET"),
+		JWTSecret:         secret,
 		FrontendOrigin:    get("FRONTEND_ORIGIN", "http://localhost:3000"),
 		CookieSecure:      os.Getenv("COOKIE_SECURE") == "true",
 		PaymentSimulation: os.Getenv("PAYMENT_SIMULATION") == "true",

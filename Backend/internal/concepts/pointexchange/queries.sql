@@ -1,5 +1,5 @@
 -- name: CreateOffer :one
-INSERT INTO offers (label, discount, cost, stock) VALUES ($1, $2, $3, $4) RETURNING *;
+INSERT INTO offers (label, value, cost, stock) VALUES ($1, $2, $3, $4) RETURNING *;
 
 -- name: GetOffer :one
 SELECT * FROM offers WHERE id = $1;

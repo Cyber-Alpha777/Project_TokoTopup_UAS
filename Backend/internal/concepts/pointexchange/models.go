@@ -17,10 +17,10 @@ type Exchange struct {
 }
 
 type Offer struct {
-	ID       int64  `json:"id"`
-	Label    string `json:"label"`
-	Discount int64  `json:"discount"`
-	Cost     int32  `json:"cost"`
-	Stock    int32  `json:"stock"`
-	Active   bool   `json:"active"`
+	ID     int64  `json:"id"`
+	Label  string `json:"label"`
+	Value  int64  `json:"value"`
+	Cost   int32  `json:"cost"`
+	Stock  int32  `json:"stock"`
+	Active bool   `json:"active"`
 }

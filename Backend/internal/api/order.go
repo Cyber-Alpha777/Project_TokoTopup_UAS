@@ -18,7 +18,7 @@ var orderStatuses = map[string]bool{
 
 type createOrderRequest struct {
 	ProductID int64  `json:"product_id" validate:"required,gt=0"`
-	Price     int64  `json:"price" validate:"required,gt=0"` // harga yang dilihat user; dicocokkan dengan harga produk
+	Price     int64  `json:"price" validate:"omitempty,gt=0"` // opsional; jika ada harus sama dengan harga produk, jika kosong dipakai harga dari DB
 	InGameID  string `json:"in_game_id" validate:"required,min=4,max=50"`
 	ZoneID    string `json:"zone_id" validate:"omitempty,numeric,min=3,max=5"`
 }

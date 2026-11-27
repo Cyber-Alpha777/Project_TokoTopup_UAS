@@ -33,20 +33,20 @@ func (q *Queries) CreateExchange(ctx context.Context, arg CreateExchangeParams) 
 }
 
 const createOffer = `-- name: CreateOffer :one
-INSERT INTO offers (label, discount, cost, stock) VALUES ($1, $2, $3, $4) RETURNING id, label, discount, cost, stock, active
+INSERT INTO offers (label, value, cost, stock) VALUES ($1, $2, $3, $4) RETURNING id, label, value, cost, stock, active
 `
 
 type CreateOfferParams struct {
-	Label    string `json:"label"`
-	Discount int64  `json:"discount"`
-	Cost     int32  `json:"cost"`
-	Stock    int32  `json:"stock"`
+	Label string `json:"label"`
+	Value int64  `json:"value"`
+	Cost  int32  `json:"cost"`
+	Stock int32  `json:"stock"`
 }
 
 func (q *Queries) CreateOffer(ctx context.Context, arg CreateOfferParams) (Offer, error) {
 	row := q.db.QueryRow(ctx, createOffer,
 		arg.Label,
-		arg.Discount,
+		arg.Value,
 		arg.Cost,
 		arg.Stock,
 	)
@@ -54,7 +54,7 @@ func (q *Queries) CreateOffer(ctx context.Context, arg CreateOfferParams) (Offer
 	err := row.Scan(
 		&i.ID,
 		&i.Label,
-		&i.Discount,
+		&i.Value,
 		&i.Cost,
 		&i.Stock,
 		&i.Active,
@@ -63,7 +63,7 @@ func (q *Queries) CreateOffer(ctx context.Context, arg CreateOfferParams) (Offer
 }
 
 const deactivateOffer = `-- name: DeactivateOffer :one
-UPDATE offers SET active = FALSE WHERE id = $1 AND active = TRUE RETURNING id, label, discount, cost, stock, active
+UPDATE offers SET active = FALSE WHERE id = $1 AND active = TRUE RETURNING id, label, value, cost, stock, active
 `
 
 func (q *Queries) DeactivateOffer(ctx context.Context, id int64) (Offer, error) {
@@ -72,7 +72,7 @@ func (q *Queries) DeactivateOffer(ctx context.Context, id int64) (Offer, error) 
 	err := row.Scan(
 		&i.ID,
 		&i.Label,
-		&i.Discount,
+		&i.Value,
 		&i.Cost,
 		&i.Stock,
 		&i.Active,
@@ -81,7 +81,7 @@ func (q *Queries) DeactivateOffer(ctx context.Context, id int64) (Offer, error) 
 }
 
 const getOffer = `-- name: GetOffer :one
-SELECT id, label, discount, cost, stock, active FROM offers WHERE id = $1
+SELECT id, label, value, cost, stock, active FROM offers WHERE id = $1
 `
 
 func (q *Queries) GetOffer(ctx context.Context, id int64) (Offer, error) {
@@ -90,7 +90,7 @@ func (q *Queries) GetOffer(ctx context.Context, id int64) (Offer, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Label,
-		&i.Discount,
+		&i.Value,
 		&i.Cost,
 		&i.Stock,
 		&i.Active,
@@ -99,7 +99,7 @@ func (q *Queries) GetOffer(ctx context.Context, id int64) (Offer, error) {
 }
 
 const listActiveOffers = `-- name: ListActiveOffers :many
-SELECT id, label, discount, cost, stock, active FROM offers WHERE active = TRUE ORDER BY cost, id
+SELECT id, label, value, cost, stock, active FROM offers WHERE active = TRUE ORDER BY cost, id
 `
 
 func (q *Queries) ListActiveOffers(ctx context.Context) ([]Offer, error) {
@@ -114,7 +114,7 @@ func (q *Queries) ListActiveOffers(ctx context.Context) ([]Offer, error) {
 		if err := rows.Scan(
 			&i.ID,
 			&i.Label,
-			&i.Discount,
+			&i.Value,
 			&i.Cost,
 			&i.Stock,
 			&i.Active,
@@ -162,7 +162,7 @@ func (q *Queries) ListExchangesByUser(ctx context.Context, userID int64) ([]Exch
 const takeOfferStock = `-- name: TakeOfferStock :one
 UPDATE offers SET stock = stock - 1
 WHERE id = $1 AND active = TRUE AND stock > 0
-RETURNING id, label, discount, cost, stock, active
+RETURNING id, label, value, cost, stock, active
 `
 
 func (q *Queries) TakeOfferStock(ctx context.Context, id int64) (Offer, error) {
@@ -171,7 +171,7 @@ func (q *Queries) TakeOfferStock(ctx context.Context, id int64) (Offer, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Label,
-		&i.Discount,
+		&i.Value,
 		&i.Cost,
 		&i.Stock,
 		&i.Active,
