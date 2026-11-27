@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { login, register } from "@/lib/store";
+import { currentRole, login, register } from "@/lib/store";
 
 const inputCls = (err?: string) =>
   `w-full rounded-lg border bg-white px-3 py-2.5 text-sm outline-none transition focus:ring-2 dark:bg-gray-800 ${
@@ -41,7 +41,7 @@ export function LoginForm() {
     if (!emailRe.test(email) || !password) { setError("Isi email yang valid dan kata sandi."); return; }
     const err = login(email.trim(), password);
     if (err) setError(err);
-    else router.push("/");
+    else router.push(currentRole() === "admin" ? "/admin" : "/"); // Admin langsung ke panel admin
   };
 
   return (

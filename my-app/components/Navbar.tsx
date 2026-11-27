@@ -14,11 +14,6 @@ export default function Navbar() {
   const [q, setQ] = useState("");
   const userRef = useRef<HTMLDivElement>(null);
 
-  // terapkan tema (preferensi tersimpan, kalau belum ada ikut sistem)
-  useEffect(() => {
-    const dark = s.theme ? s.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
-    document.documentElement.classList.toggle("dark", dark);
-  }, [s.theme]);
 
   // tutup dropdown saat klik di luar
   useEffect(() => {
@@ -87,7 +82,7 @@ export default function Navbar() {
                 {userOpen && (
                   <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
                     <p className="px-4 py-2 text-xs font-bold text-gray-500">Menu</p>
-                    {[["/pengaturan", "Pengaturan"], ["/voucher", "Voucher"], ["/riwayat", "Riwayat"]].map(([href, label]) => (
+                    {[...(account.role === "admin" ? [["/admin", "Panel Admin"]] : []), ["/pengaturan", "Pengaturan"], ["/voucher", "Voucher"], ["/riwayat", "Riwayat"]].map(([href, label]) => (
                       <Link key={href} href={href} onClick={() => setUserOpen(false)} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">
                         {label}
                       </Link>

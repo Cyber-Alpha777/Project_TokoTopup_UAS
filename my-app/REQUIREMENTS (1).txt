@@ -74,3 +74,14 @@ Perintah lain:
 - Gambar game yang tersedia baru: public/Mole.jpg dan public/FF.jpg.
   Game lain memakai sampul gradient otomatis.
 - Fitur dark mode memakai class "dark" pada <html> (toggle di Navbar).
+
+7. PANEL ADMIN (frontend saja, tanpa backend)
+---------------------------------------------
+  Alamat   : http://localhost:3000/admin
+  Email    : admin@vouchstore.id
+  Password : admin1234
+  Halaman  : Dashboard, Kelola Produk, Kelola Pesanan, Kelola Voucher, Kelola Game
+  Akun Member (mis. raka@gmail.com) yang membuka /admin akan melihat halaman 403.
+  Data admin (game, produk, voucher, pesanan) disimpan di localStorage dengan
+  kunci "vouchstore:v3" dan langsung memengaruhi tampilan toko (Katalog, harga,
+  voucher). Reset data: localStorage.removeItem("vouchstore:v3") lalu muat ulang.

@@ -68,7 +68,7 @@ export default function TopupForm({ game }: { game: Game }) {
     if (!idOk || !emailOk || !item || !payment) return;
     const order = createOrder({
       gameId: game.id, gameName: game.name, playerId: userId, zoneId: needZone ? zoneId : "",
-      item: item.label, method: payment, price, discount, total, email, voucherUid: voucher?.uid,
+      item: item.label, method: payment, price, discount, total, email, voucherUid: voucher?.uid, voucherName: voucher?.name,
     });
     router.push(`/status/${order.code}`);
   };
@@ -101,7 +101,7 @@ export default function TopupForm({ game }: { game: Game }) {
                     <button key={v.uid} className="tt-option" data-selected={draftUid === v.uid} onClick={() => setDraftUid(v.uid)}>
                       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-lg font-bold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-200">%</span>
                       <span>
-                        <span className="block text-sm font-bold">Voucher diskon {v.pct} %</span>
+                        <span className="block text-sm font-bold">{v.name}</span>
                         <span className="block text-xs text-gray-500">Min. top up {idr(v.minTopup)} · Maks. diskon {idr(v.maxDiscount)}</span>
                         <span className="block text-[11px] text-gray-400">Berlaku s.d. {v.expiry}</span>
                       </span>
@@ -119,7 +119,7 @@ export default function TopupForm({ game }: { game: Game }) {
                         <button key={v.uid} className="tt-option" disabled>
                           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gray-200 text-lg font-bold text-gray-500 dark:bg-gray-700">%</span>
                           <span>
-                            <span className="block text-sm font-bold">Voucher diskon {v.pct} %</span>
+                            <span className="block text-sm font-bold">{v.name}</span>
                             <span className="block text-xs text-gray-500">Min. top up {idr(v.minTopup)}</span>
                             <span className="block text-[11px] font-medium text-gray-500">
                               {isExpired(v) ? `Kedaluwarsa ${v.expiry}` : !item ? "Pilih nominal top up dulu" : `Belum memenuhi: tambah ${idr(v.minTopup - price)}`}
@@ -137,7 +137,7 @@ export default function TopupForm({ game }: { game: Game }) {
               <aside className="h-fit rounded-xl bg-gray-900 p-5 text-white">
                 <h3 className="mb-4 font-bold">Ringkasan Voucher</h3>
                 <dl className="space-y-2 text-xs">
-                  <div className="flex justify-between"><dt className="text-gray-400">Voucher dipilih</dt><dd className="font-bold">{draft ? `Diskon ${draft.pct} %` : "-"}</dd></div>
+                  <div className="flex justify-between"><dt className="text-gray-400">Voucher dipilih</dt><dd className="font-bold">{draft ? draft.name : "-"}</dd></div>
                   <div className="flex justify-between"><dt className="text-gray-400">Harga item</dt><dd className="font-bold">{idr(price)}</dd></div>
                   <div className="flex justify-between"><dt className="text-gray-400">Hemat</dt><dd className="font-bold">− {idr(draftDiscount)}</dd></div>
                 </dl>
@@ -204,7 +204,7 @@ export default function TopupForm({ game }: { game: Game }) {
             >
               <span className="rounded border border-gray-400 px-1.5 text-[10px] font-bold">%</span>
               <span className={voucher ? "font-semibold" : "text-gray-400"}>
-                {voucher ? `Voucher diskon ${voucher.pct} % dipakai` : "Pilih voucher yang tersedia"}
+                {voucher ? `${voucher.name} dipakai` : "Pilih voucher yang tersedia"}
               </span>
               <span className="ml-auto text-xs font-bold">Lihat ›</span>
             </button>
@@ -304,7 +304,7 @@ export default function TopupForm({ game }: { game: Game }) {
               <div className="flex justify-between"><dt className="text-gray-400">ID Pengguna</dt><dd className="font-bold">{userId ? `${userId}${needZone && zoneId ? ` (${zoneId})` : ""}` : "-"}</dd></div>
               <div className="flex justify-between"><dt className="text-gray-400">Item</dt><dd className="font-bold">{item?.label ?? "-"}</dd></div>
               <div className="flex justify-between"><dt className="text-gray-400">Pembayaran</dt><dd className="font-bold">{payment || "-"}</dd></div>
-              {voucher && <div className="flex justify-between"><dt className="text-gray-400">Voucher {voucher.pct}%</dt><dd className="font-bold">− {idr(discount)}</dd></div>}
+              {voucher && <div className="flex justify-between"><dt className="text-gray-400">{voucher.name}</dt><dd className="font-bold">− {idr(discount)}</dd></div>}
             </dl>
             <div className="my-4 border-t border-gray-700" />
             <p className="text-xs text-gray-400">Total</p>

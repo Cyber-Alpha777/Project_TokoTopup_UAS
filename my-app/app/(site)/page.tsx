@@ -1,8 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import DealCard from "@/components/DealCard";
 import GameCard from "@/components/GameCard";
 import PointsPopup from "@/components/PointsPopup";
-import { deals, games } from "@/lib/games";
+import { useCatalog, useDeals } from "@/lib/catalog";
 
 const promos = [
   { icon: "🎟️", t: "Voucher Diskon", d: "Pakai voucher hasil tukar poin untuk potongan harga di setiap pesanan.", href: "/voucher" },
@@ -11,7 +13,9 @@ const promos = [
 ];
 
 export default function Home() {
-  const popular = games.filter((g) => g.popular);
+  const games = useCatalog();
+  const deals = useDeals();
+  const popular = games.filter((g) => g.popular).slice(0, 6);
   const topDeals = deals.slice(0, 2);
 
   return (

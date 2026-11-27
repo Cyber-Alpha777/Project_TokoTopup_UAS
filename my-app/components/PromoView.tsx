@@ -1,8 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import DealCard from "@/components/DealCard";
-import { deals, voucherCatalog, idr } from "@/lib/games";
-
-export const metadata = { title: "Promo - Vouch Store" };
+import { useDeals } from "@/lib/catalog";
+import { idr } from "@/lib/games";
+import { useNow, useStore, voucherState } from "@/lib/store";
 
 const steps = [
   { t: "Top up sebagai member", d: "Masuk lalu top up game favoritmu. Top-up tanpa akun tetap bisa, tapi tanpa poin." },
@@ -10,7 +12,10 @@ const steps = [
   { t: "Tukar voucher", d: "Tukar poin di halaman Voucher, lalu pakai saat top up berikutnya." },
 ];
 
-export default function PromoPage() {
+export default function PromoView() {
+  const deals = useDeals();
+  const now = useNow();
+  const vouchers = useStore().admin.vouchers.filter((v) => voucherState(v, now) === "Aktif");
   return (
     <div className="space-y-14">
       <section className="rounded-2xl bg-linear-to-br from-purple-600 to-indigo-600 px-8 py-10 text-white">
@@ -44,11 +49,11 @@ export default function PromoPage() {
           <Link href="/voucher" className="text-sm font-semibold text-indigo-600 hover:underline">Tukar sekarang ›</Link>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {voucherCatalog.map((v) => (
+          {vouchers.map((v) => (
             <div key={v.id} className="vs-card p-4">
-              <p className="font-bold">Diskon {v.pct} %</p>
+              <p className="font-bold">{v.name}</p>
               <p className="text-xs text-gray-500">Min. top up {idr(v.minTopup)}</p>
-              <p className="text-xs text-gray-500">Maks. diskon {idr(v.maxDiscount)}</p>
+              <p className="text-xs text-gray-500">Diskon {v.value}% (maks. {idr(v.maxDiscount)})</p>
               <p className="mt-2 text-sm font-bold text-indigo-600">{v.cost} Pt</p>
             </div>
           ))}

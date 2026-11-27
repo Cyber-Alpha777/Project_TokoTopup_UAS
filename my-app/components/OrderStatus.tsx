@@ -6,12 +6,13 @@ import { useParams } from "next/navigation";
 import "./transaksi.css"; // CSS eksternal
 import QrDummy from "./QrDummy";
 import { fmtDate, idr } from "@/lib/games";
-import { setOrderStatus, useNowSec, useStore, type Order } from "@/lib/store";
+import { fileComplaint, setOrderStatus, useNowSec, useStore, type Order } from "@/lib/store";
 
 const PAY_WINDOW = 60 * 60; // detik (60 menit)
 
 const meta = {
   pending: { icon: "⏳", title: "Menunggu Pembayaran", ring: "bg-yellow-100 text-yellow-700", label: "Menunggu pembayaran" },
+  sending: { icon: "🚚", title: "Pesanan Diproses", ring: "bg-blue-100 text-blue-700", label: "Diproses" },
   success: { icon: "✓", title: "Top-up Berhasil", ring: "bg-green-100 text-green-700", label: "Berhasil" },
   failed: { icon: "✕", title: "Pembayaran Gagal", ring: "bg-red-100 text-red-700", label: "Gagal" },
 } as const;
@@ -31,6 +32,31 @@ function Row({ k, v }: { k: string; v: string }) {
   );
 }
 
+function ComplaintBox({ order }: { order: Order }) {
+  const [text, setText] = useState("");
+  const c = order.complaint;
+  if (c) {
+    return (
+      <div className="mt-6 rounded-lg bg-gray-50 p-4 text-sm dark:bg-gray-700/50">
+        <p className="font-semibold">Komplain {c.resolved ? "sudah ditangani" : "sedang diproses admin"}</p>
+        <p className="mt-1 text-gray-600 dark:text-gray-300">“{c.text}”</p>
+        {c.reply && <p className="mt-2 text-indigo-600"><b>Balasan admin:</b> {c.reply}</p>}
+      </div>
+    );
+  }
+  return (
+    <div className="mt-6 border-t border-gray-100 pt-4 dark:border-gray-700">
+      <p className="text-sm font-semibold">Ada masalah dengan pesanan ini?</p>
+      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={2} placeholder="Jelaskan masalahmu..."
+        className="mt-2 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 dark:border-gray-600 dark:bg-gray-800" />
+      <button disabled={text.trim().length < 5} onClick={() => fileComplaint(order.code, text.trim())}
+        className="mt-2 rounded-lg border border-gray-300 px-4 py-1.5 text-sm font-semibold hover:border-indigo-500 disabled:opacity-50 dark:border-gray-600">
+        Ajukan Komplain
+      </button>
+    </div>
+  );
+}
+
 /** mode "status" = halaman setelah checkout, mode "detail" = detail dari Riwayat */
 export default function OrderStatus({ mode }: { mode: "status" | "detail" }) {
   const { code } = useParams<{ code: string }>();
@@ -44,7 +70,7 @@ export default function OrderStatus({ mode }: { mode: "status" | "detail" }) {
 
   // waktu habis -> pesanan otomatis gagal
   useEffect(() => {
-    if (order?.status === "pending" && nowSec && nowSec >= expiresAt) setOrderStatus(order.code, "failed");
+    if (order?.status === "pending" && !order.seed && nowSec && nowSec >= expiresAt) setOrderStatus(order.code, "failed");
   }, [order, nowSec, expiresAt]);
 
   if (!order) {
@@ -74,6 +100,7 @@ export default function OrderStatus({ mode }: { mode: "status" | "detail" }) {
           <h1 className="mt-3 text-2xl font-extrabold">{m.title}</h1>
           <p className="mt-1 text-sm text-gray-500">
             {order.status === "pending" && "Selesaikan pembayaran sebelum waktu habis. Pesanan otomatis batal jika waktu habis."}
+            {order.status === "sending" && "Pembayaran diterima. Admin sedang memproses pengiriman item ke akun game."}
             {order.status === "success" && `Item sudah dikirim ke akun game. Struk dikirim ke ${order.email}.`}
             {order.status === "failed" && "Pembayaran tidak berhasil diproses atau waktu habis. Tidak ada item yang dikirim."}
           </p>
@@ -109,6 +136,8 @@ export default function OrderStatus({ mode }: { mode: "status" | "detail" }) {
           )}
           <Link href="/" className="flex-1 rounded-lg border border-gray-300 py-2.5 text-center text-sm font-semibold hover:border-indigo-500 dark:border-gray-600">Kembali ke Beranda</Link>
         </div>
+
+        {(order.status === "pending" || order.status === "failed") && <ComplaintBox order={order} />}
 
         {order.status === "pending" && mode === "status" && (
           <button onClick={() => setOrderStatus(order.code, "failed")} className="mt-4 w-full text-center text-xs text-gray-400 hover:text-red-500">

@@ -23,6 +23,9 @@ export const fmtDate = (ms: number) => {
   const d = new Date(ms);
   return `${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}, ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
+export const fmtTime = (ms: number) => { const d = new Date(ms); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+/** "2026-12-31" -> "31 Des 2026" */
+export const fmtDay = (iso: string) => { const [y, m, d] = iso.split("-").map(Number); return `${pad(d)} ${MON[m - 1]} ${y}`; };
 export const dayKey = (ms: number) => {
   const d = new Date(ms);
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -60,29 +63,10 @@ export const games: Game[] = [
 
 export const getGame = (id: string) => games.find((g) => g.id === id);
 
-/** Tawaran spesial = item yang punya harga coret */
-export const deals = games.flatMap((g) =>
-  g.categories.flatMap((c) =>
-    c.items.filter((i) => i.oldPrice).map((i) => ({ game: g, item: i }))
-  )
-);
-
-/* ---------- Voucher: katalog tukar poin ---------- */
-export type CatalogVoucher = {
-  id: string; pct: number; cost: number; minTopup: number; maxDiscount: number; expiry: string; expiryISO: string;
-};
-export const voucherCatalog: CatalogVoucher[] = [
-  { id: "c10", pct: 10, cost: 100, minTopup: 5000, maxDiscount: 5000, expiry: "15 Des 2026", expiryISO: "2026-12-15" },
-  { id: "c20", pct: 20, cost: 200, minTopup: 5000, maxDiscount: 10000, expiry: "31 Des 2026", expiryISO: "2026-12-31" },
-  { id: "c30", pct: 30, cost: 300, minTopup: 5000, maxDiscount: 15000, expiry: "20 Jan 2027", expiryISO: "2027-01-20" },
-  { id: "c40", pct: 40, cost: 400, minTopup: 10000, maxDiscount: 20000, expiry: "31 Jan 2027", expiryISO: "2027-01-31" },
-  { id: "c50", pct: 50, cost: 500, minTopup: 50000, maxDiscount: 25000, expiry: "28 Feb 2027", expiryISO: "2027-02-28" },
-  { id: "c60", pct: 60, cost: 600, minTopup: 50000, maxDiscount: 30000, expiry: "28 Feb 2027", expiryISO: "2027-02-28" },
-  { id: "c70", pct: 70, cost: 700, minTopup: 100000, maxDiscount: 35000, expiry: "31 Mar 2027", expiryISO: "2027-03-31" },
-];
-
-export const voucherDiscount = (v: { pct: number; maxDiscount: number } | undefined, price: number) =>
-  v ? Math.min(Math.round((price * v.pct) / 100), v.maxDiscount) : 0;
+/* ---------- Voucher ---------- */
+export type DiscountRule = { value: number; maxDiscount: number }; // value = persen diskon (1-100)
+export const voucherDiscount = (v: DiscountRule | undefined, price: number) =>
+  v ? Math.min(Math.round((price * v.value) / 100), v.maxDiscount) : 0;
 
 export const paymentGroups = [
   { group: "E-wallet", methods: ["DANA", "ShopeePay", "GoPay", "QRIS"] },

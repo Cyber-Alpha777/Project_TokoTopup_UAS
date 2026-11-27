@@ -4,11 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import GameCard from "./GameCard";
-import { games } from "@/lib/games";
+import { useCatalog } from "@/lib/catalog";
 
 const filters = ["Semua", "Populer", "Promo"] as const;
 
 export default function KatalogView() {
+  const games = useCatalog();
   const param = useSearchParams().get("q") ?? "";
   const [typed, setTyped] = useState<string | null>(null);
   const [filter, setFilter] = useState<(typeof filters)[number]>("Semua");

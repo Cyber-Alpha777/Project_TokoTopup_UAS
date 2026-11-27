@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { dayKey, fmtDate, games, idr } from "@/lib/games";
+import { dayKey, fmtDate, idr } from "@/lib/games";
 import { useAccount, useStore } from "@/lib/store";
 
 const statusStyle = {
   success: ["Berhasil", "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"],
   pending: ["Menunggu", "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300"],
+  sending: ["Diproses", "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"],
   failed: ["Gagal", "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"],
 } as const;
 
@@ -43,7 +44,7 @@ export default function Riwayat() {
       <div className="mt-6 flex flex-wrap gap-3">
         <select value={game} onChange={(e) => setGame(e.target.value)} className={selectCls} aria-label="Nama game">
           <option value="">Nama Game</option>
-          {games.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+          {s.admin.games.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
         </select>
         <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={selectCls} aria-label="Tanggal" />
         <select value={sort} onChange={(e) => setSort(e.target.value)} className={selectCls} aria-label="Urutkan">
